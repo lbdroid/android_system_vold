@@ -45,6 +45,7 @@
 #include "ResponseCode.h"
 #include "Fat.h"
 #include "Ntfs.h"
+#include "Ext4.h"
 #include "Process.h"
 #include "cryptfs.h"
 
@@ -473,11 +474,13 @@ int Volume::mountVol() {
                 continue;
             }
         } else {
-            if (Ntfs::doMount(devicePath, "/mnt/secure/staging", false, false, false,
-                    AID_SYSTEM, gid, 0702, true)) {
-                SLOGE("%s failed to mount via NTFS (%s)\n", devicePath, strerror(errno));
-                continue;
-            }
+		if (Ext4::doMount(devicePath, "/mnt/secure/staging", false, false, false)) {
+			SLOGE("%s failed to mount via EXT4 (%s)\n", devicePath, strerror(errno));
+			if (Ntfs::doMount(devicePath, "/mnt/secure/staging", false, false, false, AID_SYSTEM, gid, 0702, true)) {
+				SLOGE("%s failed to mount via NTFS (%s)\n", devicePath, strerror(errno));
+				continue;
+			}
+		}
         }
 
         SLOGI("Device %s, target %s mounted @ /mnt/secure/staging", devicePath, getMountpoint());
